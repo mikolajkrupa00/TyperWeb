@@ -1,25 +1,23 @@
 import React from 'react';
-import logo from './logo.svg';
+import {Switch, Route} from 'react-router-dom';
+import CreateSeason from './components/createSeason';
+import { Provider } from 'react-redux';
+import {createStore } from 'redux';
+import seasonState from './components/seasonsPage/reducer';
 import './App.css';
+import {setupAxiosInterceptors} from "./interceptor";
 
-function App() {
+setupAxiosInterceptors();
+
+const App = () =>
+{
+  const store = createStore(seasonState);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Provider store={store}>
+      <Switch>
+        <Route path="/createSeason" component={CreateSeason} />
+      </Switch>
+    </Provider>
   );
 }
 
