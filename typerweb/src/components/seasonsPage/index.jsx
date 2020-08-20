@@ -7,13 +7,14 @@ const SeasonsPage = () =>
     
     useEffect( () =>
     {
-        Axios.get("https://localhost:44340/api/season").then(res =>
+        console.log("asd");
+        Axios.get("/season").then(res =>
         {
-            const x = res.data;
+            console.log(res.data);
         })
     });
     return(
-        {}
+        <div>asd</div>
     )
 
 }
