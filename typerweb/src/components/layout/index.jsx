@@ -12,7 +12,7 @@ const Layout = (props) =>
 
     const{register, handleSubmit}= useForm();
     const dispatch = useDispatch();
-    const state = useSelector(x => x);
+    const state = useSelector(x => x.layoutState);
     const authenticate = (data) =>{
         Axios.post("/user/authenticate", data).then(res =>{
             dispatch({ type: "AUTHENTICATE", payload:res.data }, state);
