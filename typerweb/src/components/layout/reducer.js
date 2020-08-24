@@ -2,7 +2,6 @@ import {localStorageService} from '../../services/localStorageService';
 
 const initialState =
 {
-    isLogged: false
 }
 
 const layoutState = (state=initialState, action) =>{
@@ -11,12 +10,12 @@ const layoutState = (state=initialState, action) =>{
             localStorageService.token=action.payload.token;
             localStorageService.username=action.payload.username;
             localStorageService.role=action.payload.role;
-            return state;
+            return {...state};
         case "LOG_OUT":
             localStorageService.token="";
             localStorageService.username="";
             localStorageService.role="";
-            return state;
+            return {...state};
         default:
             return state;
     }

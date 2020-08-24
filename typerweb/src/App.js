@@ -5,8 +5,8 @@ import { Provider } from 'react-redux';
 import {createStore, combineReducers } from 'redux';
 import SeasonsPage from './components/seasonsPage'
 import layoutState from './components/layout/reducer';
-import adminSeasonsState from './adminComponents/AdminSeasons/reducer'
-import AdminSeasons from './adminComponents/AdminSeasons'
+import adminSeasonsState from './components/EditPanel/reducer'
+import AdminSeasons from './components/EditPanel/AdminSeasons'
 import './App.css';
 import {setupAxiosInterceptors} from "./services/interceptor";
 setupAxiosInterceptors();

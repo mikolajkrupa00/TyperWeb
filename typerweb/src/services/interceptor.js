@@ -8,7 +8,6 @@ const setupAxiosInterceptors = () =>
         {
             config.url=`https://localhost:44340/api${config.url}`
             console.log(config.headers);
-            console.log(config.headers.Authorization);
             return config;
         }
     });

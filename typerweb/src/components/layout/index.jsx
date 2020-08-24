@@ -16,10 +16,7 @@ const Layout = (props) =>
     const authenticate = (data) =>{
         Axios.post("/user/authenticate", data).then(res =>{
             dispatch({ type: "AUTHENTICATE", payload:res.data }, state);
-            console.log(localStorageService.username)
-            console.log(localStorageService.role)
-            console.log(localStorageService.token)
-            window.location.reload(false);
+            window.location.reload(false); // todo not setting seasons
         }).catch(er => console.log(er));
     }
 
@@ -30,7 +27,7 @@ const Layout = (props) =>
 
     return(
         <div>
-            {localStorageService.role===0 && <div>Admin button</div>}
+            {localStorageService.role && <div>Admin button</div>}
             {!localStorageService.username && 
             <FormMain onSubmit={handleSubmit(authenticate)}>
             login: <FormInput ref={register()} name="username" type="text"/> <br/>

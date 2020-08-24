@@ -16,7 +16,7 @@ const CreateSeason = () =>
     //const dispatch = useDispatch();
     const createSeason = (data) =>
     {
-        Axios.get("/season").then(res => console.log(res.data));
+        Axios.get("/season").then();
         // Axios.post(`${process.env.REACT_APP_API_BASE_URL}/season`, data).then(res =>{
         //     dispatch({ type: "ADD_SEASON", payload:data });
         // });
