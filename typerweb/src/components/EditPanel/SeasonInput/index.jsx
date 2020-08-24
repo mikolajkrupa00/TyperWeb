@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import Axios from 'axios';
 import {useDispatch, useSelector} from 'react-redux';
 import { useForm } from "react-hook-form";
-import adminSeasonState from '../reducer';
 
 const SeasonInput=(props) =>
 {
@@ -11,7 +10,7 @@ const SeasonInput=(props) =>
     const{register, handleSubmit} = useForm();
     const{season} = props;
     const dispatch = useDispatch();
-    const adminSeasonsState = useSelector(s => s.adminSeasonsState);
+    const editPanelState = useSelector(s => s.editPanelState);
 
     const setFormValue = e =>{
         e.target.name==="startYear" ? setStartYear(e.target.value):
@@ -27,30 +26,30 @@ const SeasonInput=(props) =>
         };
         Axios.put("/season", request).then(() =>{
             Axios.get("/season").then(res =>
-            dispatch({type:"RESET_SEASONS", payload:res.data}, adminSeasonsState)) // edit instead request
+            dispatch({type:"RESET_SEASONS", payload:res.data}, editPanelState)) // edit instead request
         })
     }
 
     const setGameweeks = () =>{
         const seasonId = season.seasonId;
-        adminSeasonsState.editedGameweeks!==seasonId ? 
+        editPanelState.editedGameweeks!==seasonId ? 
             Axios.get(`/gameweek/${seasonId}`).then(res =>{
                 dispatch({type:"SET_GAMEWEEKS", payload:{
                     gameweeks:res.data,
                     seasonId:seasonId
-                }}, adminSeasonsState)
+                }}, editPanelState)
             }):
-            dispatch({type:"BACK_GAMEWEEKS"}, adminSeasonsState)
+            dispatch({type:"BACK_GAMEWEEKS"}, editPanelState)
     }
 
     const editSeason = () =>{
-        dispatch({type:"EDIT_SEASON", payload:season.seasonId}, adminSeasonsState)
+        dispatch({type:"EDIT_SEASON", payload:season.seasonId}, editPanelState)
         setStartYear(season.startYear)
         setEndYear(season.endYear)
     }
     return(
         <div>
-            { adminSeasonsState.editedSeason === season.seasonId ? 
+            { editPanelState.editedSeason === season.seasonId ? 
                 <div key={season.seasonId}>
                     <form onSubmit={handleSubmit(saveSeason)}>
                         <input onChange={setFormValue} type="number" value={startYear} name="startYear" ref={register()}/>

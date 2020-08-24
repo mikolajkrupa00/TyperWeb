@@ -1,19 +1,19 @@
 import React, {useEffect} from 'react';
 import Axios from 'axios';
 import {useDispatch, useSelector} from 'react-redux';
-import Layout from '../../layout'
-import SeasonInput from '../SeasonInput'
-import GameweekInput from '../GameweekInput'
+import Layout from '../layout'
+import SeasonInput from './SeasonInput'
+import GameweekInput from './GameweekInput'
 
-const AdminSeasons = () =>{
+const EditPanel = () =>{
     const dispatch = useDispatch();
-    const adminSeasonsState = useSelector(x => x.adminSeasonsState);
+    const editPanelState = useSelector(x => x.editPanelState);
 
-    const seasons = adminSeasonsState.seasons;
-    const gameweeks = adminSeasonsState.gameweeks;
+    const seasons = editPanelState.seasons;
+    const gameweeks = editPanelState.gameweeks;
     useEffect(() => {
         Axios.get("/season").then(res =>{
-            dispatch({type:"SET_SEASONS", payload:res.data}, adminSeasonsState)
+            dispatch({type:"SET_SEASONS", payload:res.data}, editPanelState)
         })
     },[])
 
@@ -23,7 +23,7 @@ const AdminSeasons = () =>{
                 {seasons && seasons.map(season => (
                     <div>
                         <SeasonInput key={season.seasonId} season={season}></SeasonInput>                                  
-                        {gameweeks && adminSeasonsState.editedGameweeks===season.seasonId &&
+                        {gameweeks && editPanelState.editedGameweeks===season.seasonId &&
                         gameweeks.map(gameweek =>(
                             <GameweekInput gameweek={gameweek}></GameweekInput>
                         ))}
@@ -34,4 +34,4 @@ const AdminSeasons = () =>{
     )
 }
 
-export default AdminSeasons;
+export default EditPanel;

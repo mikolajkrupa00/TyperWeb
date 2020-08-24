@@ -4,7 +4,7 @@ import {useForm} from 'react-hook-form';
 import Axios from 'axios';
 
 const GameweekInput = (props) =>{
-    const adminSeasonsState = useSelector(x => x.adminSeasonsState);
+    const editPanelState = useSelector(x => x.editPanelState);
     const dispatch = useDispatch();
     const{register, handleSubmit} = useForm();
     const{gameweek} = props;
@@ -12,15 +12,15 @@ const GameweekInput = (props) =>{
 
     const editGameweek = () =>{
         setGameweekNumber(gameweek.gameweekNumber)
-        dispatch({type:"EDIT_GAMEWEEK", payload:gameweek.gameweekId}, adminSeasonsState)
+        dispatch({type:"EDIT_GAMEWEEK", payload:gameweek.gameweekId}, editPanelState)
     }
 
     const saveGameweek = () =>{
         Axios.put("/gameweek", {
             gameweekId:parseInt(gameweek.gameweekId), 
-            gameweekNumber:parseInt(gameweekNumber)}, adminSeasonsState).then(res =>{
-            Axios.get(`/gameweek/${adminSeasonsState.editedGameweeks}`).then(res =>{
-                dispatch({type:"RESET_GAMEWEEKS", payload:res.data}, adminSeasonsState)
+            gameweekNumber:parseInt(gameweekNumber)}, editPanelState).then(res =>{
+            Axios.get(`/gameweek/${editPanelState.editedGameweeks}`).then(res =>{
+                dispatch({type:"RESET_GAMEWEEKS", payload:res.data}, editPanelState)
             })
         })
     }
@@ -31,7 +31,7 @@ const GameweekInput = (props) =>{
 
     return(
         <div>
-        {adminSeasonsState.editedGameweek !== gameweek.gameweekId ?
+        {editPanelState.editedGameweek !== gameweek.gameweekId ?
         <div key={gameweek.gameweekId}>
             {gameweek.gameweekNumber}
             <button onClick={editGameweek}>edytuj</button>

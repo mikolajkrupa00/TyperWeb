@@ -8,7 +8,7 @@ const initState ={
 }
 
 
-const adminSeasonState = (state=initState, action) =>
+const editPanelState = (state=initState, action) =>
 {
     switch (action.type) {
         case "SAVE_SEASON":
@@ -60,4 +60,4 @@ const adminSeasonState = (state=initState, action) =>
     }
 }
 
-export default adminSeasonState;
+export default editPanelState;
