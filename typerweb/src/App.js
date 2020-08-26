@@ -21,7 +21,7 @@ const App = () =>
   return (
     <Provider store={store}>
       <Switch>
-        <Route path="/adminSeasons" component={EditPanel}/>
+        <Route path="/adminPanel" component={EditPanel}/>
       </Switch>
     </Provider>
   );

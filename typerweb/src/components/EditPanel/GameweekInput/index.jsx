@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {useForm} from 'react-hook-form';
 import Axios from 'axios';
+import components from "../styles"
 
 const GameweekInput = (props) =>{
     const editPanelState = useSelector(x => x.editPanelState);
@@ -9,6 +10,7 @@ const GameweekInput = (props) =>{
     const{register, handleSubmit} = useForm();
     const{gameweek} = props;
     const[gameweekNumber, setGameweekNumber] = useState();
+    const{EditButton, EditInput, GameweekButton, AddButton} = components;
 
     const editGameweek = () =>{
         setGameweekNumber(gameweek.gameweekNumber)
@@ -33,13 +35,15 @@ const GameweekInput = (props) =>{
         <div>
         {editPanelState.editedGameweek !== gameweek.gameweekId ?
         <div key={gameweek.gameweekId}>
-            {gameweek.gameweekNumber}
-            <button onClick={editGameweek}>edytuj</button>
+            <GameweekButton>
+                {gameweek.gameweekNumber}
+            </GameweekButton>
+            <EditButton onClick={editGameweek}>edytuj</EditButton>
         </div>:
         <div key={gameweek.gameweekId}>
             <form onSubmit={handleSubmit(saveGameweek)}>
-                <input onChange={setFormValue} type="number" name="gameweekNumber" value={gameweekNumber} ref={register()}/>
-                <button type="submit">zapisz</button>
+                <EditInput onChange={setFormValue} type="number" name="gameweekNumber" value={gameweekNumber} ref={register()}/>
+                <EditButton type="submit">zapisz</EditButton>
             </form>
         </div>          
         }
