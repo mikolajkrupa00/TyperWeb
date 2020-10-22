@@ -1,54 +1,64 @@
-import React, {useState} from 'react';
-import {useSelector, useDispatch} from 'react-redux';
-import {useForm} from 'react-hook-form';
+import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useForm } from 'react-hook-form';
 import Axios from 'axios';
-import components from "../styles"
+import components from '../styles';
+import { useHistory } from 'react-router-dom';
 
-const GameweekInput = (props) =>{
-    const editPanelState = useSelector(x => x.editPanelState);
-    const dispatch = useDispatch();
-    const{register, handleSubmit} = useForm();
-    const{gameweek} = props;
-    const[gameweekNumber, setGameweekNumber] = useState();
-    const{EditButton, EditInput, GameweekButton, AddButton} = components;
+const GameweekInput = (props) => {
+  const dispatch = useDispatch();
+  const { register, handleSubmit, errors } = useForm();
+  const history = useHistory();
+  const { gameweek } = props;
+  const { gameweekId, isEdited, gameweekNumber } = gameweek;
+  const { EditButton, EditInput, GameweekButton, AddButton } = components;
 
-    const editGameweek = () =>{
-        setGameweekNumber(gameweek.gameweekNumber)
-        dispatch({type:"EDIT_GAMEWEEK", payload:gameweek.gameweekId}, editPanelState)
-    }
+  const saveGameweek = ({ gameweekNumber }) => {
+    const request = {
+      gameweekId: +gameweekId,
+      gameweekNumber: +gameweekNumber,
+    };
+    Axios.put('/gameweek', request).then((res) => {
+      dispatch({ type: 'EDIT_GAMEWEEK', payload: request });
+    });
+  };
 
-    const saveGameweek = () =>{
-        Axios.put("/gameweek", {
-            gameweekId:parseInt(gameweek.gameweekId), 
-            gameweekNumber:parseInt(gameweekNumber)}, editPanelState).then(res =>{
-            Axios.get(`/gameweek/${editPanelState.editedGameweeks}`).then(res =>{
-                dispatch({type:"RESET_GAMEWEEKS", payload:res.data}, editPanelState)
-            })
-        })
-    }
+  const setGameweekEditInput = () => {
+    dispatch({ type: 'SET_GAMEWEEK_EDIT_INPUT', payload: gameweekId });
+  };
 
-    const setFormValue = e =>{
-        setGameweekNumber(e.target.value)
-    }
+  const deleteGameweek = () => {
+    Axios.delete(`/gameweek/${+gameweekId}`).then(() => {
+      dispatch({ type: 'DELETE_GAMEWEEK', payload: gameweekId });
+    });
+  };
 
-    return(
-        <div>
-        {editPanelState.editedGameweek !== gameweek.gameweekId ?
-        <div key={gameweek.gameweekId}>
-            <GameweekButton>
-                {gameweek.gameweekNumber}
-            </GameweekButton>
-            <EditButton onClick={editGameweek}>edytuj</EditButton>
-        </div>:
-        <div key={gameweek.gameweekId}>
-            <form onSubmit={handleSubmit(saveGameweek)}>
-                <EditInput onChange={setFormValue} type="number" name="gameweekNumber" value={gameweekNumber} ref={register()}/>
-                <EditButton type="submit">zapisz</EditButton>
-            </form>
-        </div>          
-        }
+  return (
+    <div>
+      {!isEdited ? (
+        <div key={gameweekId}>
+          <GameweekButton onClick={() => history.push('/editMatches', gameweekId)}>{gameweekNumber}</GameweekButton>
+          <EditButton onClick={setGameweekEditInput}>edytuj</EditButton>
+          <EditButton onClick={deleteGameweek}>usuń</EditButton>
         </div>
-    )
-}
+      ) : (
+        <div key={gameweekId}>
+          <form onSubmit={handleSubmit(saveGameweek)}>
+            <EditInput
+              type="number"
+              name="gameweekNumber"
+              defaultValue={gameweekNumber}
+              ref={register({ required: true, min: 1, max: 50 })}
+            />
+            {errors['gameweekNumber']?.type === 'required' && <span>pole wymagane</span>}
+            {errors['gameweekNumber']?.type === 'min' && <span>zbyt mała wartość</span>}
+            {errors['gameweekNumber']?.type === 'max' && <span>zbyt duża wartość</span>}
+            <EditButton type="submit">zapisz</EditButton>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default GameweekInput;

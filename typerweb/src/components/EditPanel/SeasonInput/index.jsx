@@ -5,11 +5,8 @@ import { useForm } from 'react-hook-form';
 import components from '../styles';
 
 const SeasonInput = ({ season }) => {
-  const { register, handleSubmit } = useForm({
-    defaultValues: season,
-  });
+  const { register, handleSubmit, errors } = useForm();
   const dispatch = useDispatch();
-  const editPanelState = useSelector((s) => s.editPanelState); // todo dekostruktyzacja
   const { EditButton, EditInput, SeasonButton } = components;
 
   const saveSeason = (data) => {
@@ -19,17 +16,17 @@ const SeasonInput = ({ season }) => {
       startYear: +data.startYear,
       endYear: +data.endYear,
     };
-    Axios.put('/season', request).then(() => {
-      Axios.get('/season').then((res) => dispatch({ type: 'RESET_SEASONS', payload: res.data }, editPanelState)); // edit instead of request
+    Axios.put('/season', request).then((res) => {
+      dispatch({ type: 'EDIT_SEASON', payload: request });
     });
   };
 
   const setGameweeks = () => {
     const seasonId = season.seasonId; // todo dekostruktyzacja
     !season.isExpanded // todo dekostruktyzacja
-      ? Axios.get(`/gameweek/${seasonId}`).then((res) => {
+      ? Axios.get(`/gameweek/getGameweeksBySeasonId/${seasonId}`).then((res) => {
           dispatch({
-            type: 'SET_GAMEWEEKS',
+            type: 'SET_ADMIN_GAMEWEEKS',
             payload: {
               gameweeks: res.data,
               seasonId: seasonId,
@@ -39,25 +36,40 @@ const SeasonInput = ({ season }) => {
       : dispatch({ type: 'BACK_GAMEWEEKS' });
   };
 
-  const editSeason = () => {
-    dispatch({ type: 'EDIT_SEASON', payload: season.seasonId });
+  const deleteSeason = () => {
+    const seasonId = +season.seasonId;
+    Axios.delete(`/season/${seasonId}`).then(() => {
+      dispatch({ type: 'DELETE_SEASON', payload: seasonId });
+    });
   };
 
-  const deleteSeason = () => {
-    console.log('asd');
-    const seasonId = parseInt(season.seasonId);
-    Axios.delete(`/season/${seasonId}`).then(() => {
-      Axios.get('/season').then((res) => dispatch({ type: 'RESET_SEASONS', payload: res.data }));
-    });
+  const setSeasonEditInput = (id) => {
+    dispatch({ type: 'SET_SEASON_EDIT_INPUT', payload: id });
   };
 
   return (
     <div>
-      {editPanelState.editedSeason === season.seasonId ? (
+      {season.isEdited ? (
         <div key={season.seasonId}>
           <form onSubmit={handleSubmit(saveSeason)}>
-            <EditInput type="number" name="startYear" ref={register()} />
-            <EditInput type="number" name="endYear" ref={register()} />
+            <EditInput
+              defaultValue={season.startYear}
+              type="number"
+              name="startYear"
+              ref={register({ required: true, min: 2000, max: 2030 })}
+            />
+            {errors['startYear']?.type === 'required' && <span>pole jest wymagane </span>}
+            {errors['startYear']?.type === 'min' && <span>zbyt mała wartość </span>}
+            {errors['startYear']?.type === 'max' && <span>zbyt duża wartość </span>}
+            <EditInput
+              defaultValue={season.endYear}
+              type="number"
+              name="endYear"
+              ref={register({ required: true, min: 2000, max: 2030 })}
+            />
+            {errors['endYear']?.type === 'required' && <span>pole jest wymagane </span>}
+            {errors['endYear']?.type === 'min' && <span>zbyt mała wartość </span>}
+            {errors['endYear']?.type === 'max' && <span>zbyt duża wartość </span>}
             <EditButton type="submit">zapisz</EditButton>
           </form>
         </div>
@@ -67,7 +79,7 @@ const SeasonInput = ({ season }) => {
             {`${season.startYear} | `}
             {season.endYear}
           </SeasonButton>
-          <EditButton onClick={editSeason}>edytuj</EditButton>
+          <EditButton onClick={() => setSeasonEditInput(season.seasonId)}>edytuj</EditButton>
           <EditButton onClick={deleteSeason}>usuń</EditButton>
         </div>
       )}
