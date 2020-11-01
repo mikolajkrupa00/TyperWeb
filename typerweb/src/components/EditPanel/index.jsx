@@ -17,13 +17,14 @@ const EditPanelPage = () => {
   const { register: registerGameweek, handleSubmit: handleGameweekSubmit, errors: gameweekErrors, reset: resetGameweek } = useForm();
   const history = useHistory();
   useEffect(() => {
+    //createTeams("2020", "2021")
     localStorageService.role !== '0'
       ? history.push('/')
       : Axios.get('/season')
-          .then((res) => {
-            dispatch({ type: 'SET_ADMIN_SEASONS', payload: res.data });
-          })
-          .catch((er) => console.log(er.response));
+        .then((res) => {
+          dispatch({ type: 'SET_ADMIN_SEASONS', payload: res.data });
+        })
+        .catch((er) => console.log(er.response));
   }, []);
 
   const saveSeason = ({ startYear, endYear }) => {
@@ -47,6 +48,7 @@ const EditPanelPage = () => {
     });
     resetGameweek(['gameweekNumber']);
   };
+
   return (
     <Layout>
       <EditConainter>

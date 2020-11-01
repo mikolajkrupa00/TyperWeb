@@ -1,20 +1,24 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Layout from '../Layout';
 import Axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { localStorageService } from '../../services/localStorageService';
 import components from './styles'
+import { useHistory } from 'react-router-dom';
 
 const Typer = () => {
+  const history = useHistory();
+  const [isSaved, setIsSaved] = useState(false);
   const dispatch = useDispatch();
   const { register, handleSubmit } = useForm();
   const { gameweeks, matches } = useSelector((x) => x.typerState);
-  const {TyperMain} = components;
+  const { TyperMain, TyperTable, TyperInput, TyperForm, GameweekData, MatchData, HomeTeamName, MatchResult, TyperMatch, PredictedGoals,
+    MatchDate, FormSubmit, TyperMatchCenter, AwayTeamName, TyperInputs, SubmitContainer, IsSavedBlock } = components;
   useEffect(() => {
     Axios.get('/gameweek/getCurrentSeasonGameweeks').then((res) => {
-      dispatch({ type: 'SET_GAMEWEEKS', payload: res.data }); 
-    });
+      dispatch({ type: 'SET_GAMEWEEKS', payload: res.data });
+    }).catch(er => { if (er.response.status === 401) history.push("/login") });
   }, []);
 
   const setMatches = (gameweekId) => {
@@ -22,75 +26,93 @@ const Typer = () => {
     matches[0] && matches[0].gameweekId === gameweekId
       ? dispatch({ type: 'BACK_MATCHES' })
       : Axios.get(`/matchprediction/areGameweekPredictionsExist/${gameweekId}/${userId}`).then((areCreated) => {
-        console.log(areCreated.data)
-          if (!areCreated.data)
-            Axios.get(`/match/getMatchesByGameweekId/${gameweekId}`).then((res) => {
-              res.data.map((match) => {
-                Axios.post('/matchprediction', {
-                  userId: userId,
-                  matchId: match.matchId,
-                });
+        !areCreated.data ?
+          Axios.post('/matchprediction/createGameweeksPrediction', { gameweekId: gameweekId, userId: userId })
+            .then(x => {
+              Axios.get(`/matchprediction/getGameweekPredictionsByUserId/${gameweekId}/${userId}`).then((res) => {
+                console.log(res.data)
+                dispatch({ type: 'SET_MATCHES', payload: res.data.map((x) => ({ ...x, gameweekId: gameweekId })) });
               });
-            });
+            }) :
           Axios.get(`/matchprediction/getGameweekPredictionsByUserId/${gameweekId}/${userId}`).then((res) => {
+            console.log(res.data)
             dispatch({ type: 'SET_MATCHES', payload: res.data.map((x) => ({ ...x, gameweekId: gameweekId })) });
           });
-        });
+      });
+    setIsSaved(false);
   };
 
   const saveMatchPrediction = (data) => {
-    matches
-      .filter((x) => new Date(x.matchDate) > new Date())
-      .map((match) => {
-        const request = {
-          matchPredictionId: +match.matchPredictionId,
-          HomeTeamGoalsPrediction: +data[`homeTeam${match.matchPredictionId}`],
-          AwayTeamGoalsPrediction: +data[`awayTeam${match.matchPredictionId}`],
-        };
-        Axios.put('/matchprediction', request);
-      });
+    console.log(data);
+    let predictions = matches.filter((x) => new Date(x.matchDate) > new Date())
+      .map((match) => ({
+        MatchPredictionId: +match.matchPredictionId,
+        HomeTeamGoalsPrediction: data[`homeTeam${match.matchPredictionId}`] === "" ? null : +data[`homeTeam${match.matchPredictionId}`],
+        AwayTeamGoalsPrediction: data[`awayTeam${match.matchPredictionId}`] === "" ? null : +data[`awayTeam${match.matchPredictionId}`],
+      }));
+    predictions = predictions.filter(x => x.HomeTeamGoalsPrediction !== null && matches.AwayTeamGoalsPrediction !== null);
+    console.log(predictions)
+    Axios.put("/matchPrediction/updateMatchPredictions", { predictions: predictions });
+    setIsSaved(true);
   };
 
   return (
     <Layout>
       <TyperMain>
         {gameweeks &&
-          gameweeks.map((gameweek) => (
-            <div key={gameweek.gameweekId}>
-              <button onClick={() => setMatches(gameweek.gameweekId)}>{gameweek.gameweekNumber}</button>
-              <form onSubmit={handleSubmit(saveMatchPrediction)}>
-                {matches[0] &&
-                  matches[0].gameweekId === gameweek.gameweekId &&
-                  matches.map((match) => (
-                    <>
-                      {match.homeTeamName}
+          gameweeks.map(gameweek => (
+            <TyperTable key={gameweek.gameweekId}>
+              <GameweekData onClick={() => setMatches(gameweek.gameweekId)}>{`Kolejka ${gameweek.gameweekNumber}`}
+              </GameweekData>
+              <TyperForm onSubmit={handleSubmit(saveMatchPrediction)}>
+                {matches[0] && matches[0].gameweekId === gameweek.gameweekId &&
+                  matches.map(match => (
+                    <MatchData>
+                      <HomeTeamName>{match.homeTeamName}</HomeTeamName>
                       {new Date(match.matchDate) > new Date() ? (
-                        <>
-                          <input
-                            name={`homeTeam${match.matchPredictionId}`}
-                            defaultValue={match.homeTeamGoalsPrediction ? match.homeTeamGoalsPrediction : ''}
-                            ref={register()}
-                          />
-                          <input
-                            name={`awayTeam${match.matchPredictionId}`}
-                            defaultValue={match.awayTeamGoalsPrediction ? match.awayTeamGoalsPrediction : ''}
-                            ref={register()}
-                          />
-                        </>
+                        <TyperMatch>
+                          <MatchResult>{match.homeTeamGoals && match.homeTeamGoals}</MatchResult>
+                          <TyperMatchCenter>
+                            <TyperInputs>
+                              <TyperInput name={`homeTeam${match.matchPredictionId}`}
+                                defaultValue={match.homeTeamGoalsPrediction !== null ? match.homeTeamGoalsPrediction : ''}
+                                ref={register()} type="text" />
+                              <TyperInput name={`awayTeam${match.matchPredictionId}`}
+                                defaultValue={match.awayTeamGoalsPrediction !== null ? match.awayTeamGoalsPrediction : ''}
+                                ref={register()} type="text" />
+                            </TyperInputs>
+                            <MatchDate>{match.matchDate}</MatchDate>
+                          </TyperMatchCenter>
+                          <MatchResult>{match.awayTeamGoals && match.awayTeamGoals}</MatchResult>
+                        </TyperMatch>
                       ) : (
-                        <>
-                          {match.homeTeamGoals} {match.homeTeamGoalsPrediction ? match.homeTeamGoalsPrediction : ''} :{match.awayTeamGoals}{' '}
-                          {match.awayTeamGoalsPrediction ? match.awayTeamGoalsPrediction : ''}
-                        </>
-                      )}
-                      {match.awayTeamName} <br />
-                    </>
+                          <TyperMatch>
+                            <MatchResult>{match.homeTeamGoals && match.homeTeamGoals}</MatchResult>
+
+                            <TyperMatchCenter>
+                              <PredictedGoals>{match.homeTeamGoalsPrediction ? `${match.homeTeamGoalsPrediction} :
+                               ${match.awayTeamGoalsPrediction}` : `-:-`}
+                              </PredictedGoals>
+                              <MatchDate>{match.matchDate}</MatchDate>
+                            </TyperMatchCenter>
+
+                            <MatchResult>{match.awayTeamGoals && match.awayTeamGoals}</MatchResult>
+                          </TyperMatch>
+                        )}
+
+                      <AwayTeamName>{match.awayTeamName}</AwayTeamName>
+                    </MatchData>
                   ))}
                 {matches.find((x) => new Date(x.matchDate) > new Date() && x.gameweekId === gameweek.gameweekId) && (
-                  <input type="submit" value="zapisz" />
+                  <>
+                    {isSaved && <IsSavedBlock>Zapisano</IsSavedBlock>}
+                    <SubmitContainer>
+                      <FormSubmit type="submit" value="zapisz">Zapisz</FormSubmit>
+                    </SubmitContainer>
+                  </>
                 )}
-              </form>
-            </div>
+              </TyperForm>
+            </TyperTable>
           ))}
       </TyperMain>
     </Layout>

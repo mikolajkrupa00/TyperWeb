@@ -5,10 +5,9 @@ const setupAxiosInterceptors = () => {
     config.headers.Authorization = `Bearer ${localStorageService.token}`;
     if (config.url[0] === '/') {
       config.url = `http://localhost:5000/api${config.url}`;
-      console.log(config.url);
-      console.log(config.headers);
       return config;
     }
+    return config;
   });
   Axios.interceptors.request.use(
     (cf) => cf,

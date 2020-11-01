@@ -10,8 +10,20 @@ export default {
   UserContainer: styled.div`
   `,
   LayoutContainer: styled.div`
+  margin:0
+  width:100%;
+  min-height:930px;
+  background:#f5f5f5;
   `,
   MainButtonContainer: styled.div`
+  font-size:95%;
+  padding:2%;
+  &:hover {
+    color:#9370DB;
+    cursor:pointer;
+  }
+  `,
+  TopBarButton: styled.div`
   font-size:95%;
   padding:2%;
   &:hover {
@@ -30,6 +42,8 @@ export default {
   align-items:center;
   `,
   ChildContainer: styled.div`
+  margin-top:3%;
+  margin-bottom:3%;
   `,
   AdminPanel: styled.div`
   `,
