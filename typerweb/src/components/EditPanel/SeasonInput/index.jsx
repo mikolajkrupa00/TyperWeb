@@ -7,13 +7,13 @@ import components from '../styles';
 const SeasonInput = ({ season }) => {
   const { register, handleSubmit, errors } = useForm();
   const dispatch = useDispatch();
-  const { EditButton, EditInput, SeasonButton } = components;
+  const { EditButton, EditInput, SeasonButton, SeasonContainer, CreateForm, InputError, EditSubmit } = components;
   const { seasonId, endYear, startYear, isEdited, isExpanded } = season
   const { gameweeks } = useSelector(x => x.editPanelState);
 
   const saveSeason = (data) => {
     const request = {
-      seasonId: +seasonId,
+      seasonId: seasonId,
       startYear: +data.startYear,
       endYear: +data.endYear,
     };
@@ -24,7 +24,7 @@ const SeasonInput = ({ season }) => {
 
   const setGameweeks = () => {
     !isExpanded
-      ? Axios.get(`/gameweek/getGameweeksBySeasonId/${seasonId}`).then((res) => {
+      ? (Axios.get(`/gameweek/getGameweeksBySeasonId/${seasonId}`).then((res) => {
         dispatch({
           type: 'SET_ADMIN_GAMEWEEKS',
           payload: {
@@ -32,8 +32,11 @@ const SeasonInput = ({ season }) => {
             seasonId: seasonId,
           },
         });
-      })
-      : dispatch({ type: 'BACK_GAMEWEEKS' });
+      }))
+      : (
+        dispatch({ type: 'BACK_GAMEWEEKS' })
+
+      );
   };
 
   const deleteSeason = () => {
@@ -43,10 +46,7 @@ const SeasonInput = ({ season }) => {
   };
 
   const setSeasonEditInput = (id) => {
-    fetch(`https://raw.githubusercontent.com/openfootball/football.json/master/2020-21/en.1.json`)
-      .then(response => response.json()).then(data => {
-        console.log(data)
-      })
+    dispatch({ type: "SET_SEASON_EDIT_INPUT", payload: id })
   };
 
   const buildSeason = () => {
@@ -88,38 +88,38 @@ const SeasonInput = ({ season }) => {
     <div>
       {isEdited ? (
         <div key={seasonId}>
-          <form onSubmit={handleSubmit(saveSeason)}>
+          <CreateForm onSubmit={handleSubmit(saveSeason)}>
             <EditInput
               defaultValue={startYear}
               type="number"
               name="startYear"
               ref={register({ required: true, min: 2000, max: 2030 })}
             />
-            {errors['startYear']?.type === 'required' && <span>pole jest wymagane </span>}
-            {errors['startYear']?.type === 'min' && <span>zbyt mała wartość </span>}
-            {errors['startYear']?.type === 'max' && <span>zbyt duża wartość </span>}
+            {errors['startYear']?.type === 'required' && <InputError>pole jest wymagane </InputError>}
+            {errors['startYear']?.type === 'min' && <InputError>zbyt mała wartość </InputError>}
+            {errors['startYear']?.type === 'max' && <InputError>zbyt duża wartość </InputError>}
             <EditInput
               defaultValue={endYear}
               type="number"
               name="endYear"
               ref={register({ required: true, min: 2000, max: 2030 })}
             />
-            {errors['endYear']?.type === 'required' && <span>pole jest wymagane </span>}
-            {errors['endYear']?.type === 'min' && <span>zbyt mała wartość </span>}
-            {errors['endYear']?.type === 'max' && <span>zbyt duża wartość </span>}
-            <EditButton type="submit">zapisz</EditButton>
-          </form>
+            {errors['endYear']?.type === 'required' && <InputError>pole jest wymagane </InputError>}
+            {errors['endYear']?.type === 'min' && <InputError>zbyt mała wartość </InputError>}
+            {errors['endYear']?.type === 'max' && <InputError>zbyt duża wartość </InputError>}
+            <EditSubmit type="submit">zapisz</EditSubmit>
+          </CreateForm>
         </div>
       ) : (
-          <div key={seasonId}>
+          <SeasonContainer key={seasonId}>
             <SeasonButton onClick={setGameweeks}>
-              {`${startYear} | `}
+              {`Sezon ${startYear} | `}
               {endYear}
             </SeasonButton>
             <EditButton onClick={() => setSeasonEditInput(seasonId)}>edytuj</EditButton>
             <EditButton onClick={deleteSeason}>usuń</EditButton>
             {isExpanded && gameweeks[0] === undefined && <EditButton onClick={() => buildSeason()}>Zbuduj sezon</EditButton>}
-          </div>
+          </SeasonContainer>
         )}
     </div>
   );

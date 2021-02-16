@@ -13,21 +13,21 @@ const RegisterPage = () => {
   const { FormLabel, FormInput, FormMain, RegisterMain, FormSubmit, InputError } = components;
 
   const createUser = (data) => {
-    Axios.post('/user/register', data).then((res) => {
-      Axios.post('/user/authenticate', { username: data.username, password: data.password }).then((user) => {
-        dispatch({ type: 'AUTHENTICATE', payload: user.data }); // obcy reducer
-        history.push('/');
-      });
+    Axios.post('/user/register', data).then((user) => {
+      console.log(user.data)
+      dispatch({
+        type: 'AUTHENTICATE', payload: {
+          token: user.data.token,
+          username: data.username,
+          role: 0,
+          userId: user.data.userId
+        }
+      }); // obcy reducer
+      history.push('/');
     })
       .catch((error) => {
-        console.log(JSON.stringify(error));
-        console.log(error.response.data)
-        console.log(error.response.status)
-        console.log(error.response.headers)
-        console.log(error.request);
-        console.log('Error', error.message);
-        console.log(error.config);
-      });;
+        console.log(error.response)
+      });
   };
 
   return (

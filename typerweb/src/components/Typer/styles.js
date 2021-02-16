@@ -25,23 +25,30 @@ export default {
     TyperInput: styled.input`
     display:flex;
     text-align: center; 
-    width:25px;
-    height:25px;
+    align-items:center;
+    justify-content:center;
+    width:20px;
+    height:23px;
+    &:first-child {
+        margin-right: 2px;
+    }
     `,
     MatchData: styled.div`
-    border-bottom: 1px solid #E6E6FA;
+    height:70px;
+    border-bottom: 2px solid #E6E6FA;
     display:flex;
+    align-items:center;
+    justify-content:center;
     flex-direction:row;
     `,
     HomeTeamName: styled.div`
-    padding-right:30px;
+    padding-right:20px;
     display:flex;
     justify-content:flex-end;
     width:200px;
-    align-items:center;
     `,
     AwayTeamName: styled.div`
-    padding-left:30px;
+    padding-left:20px;
     width:200px;
     display:flex;
     justify-content:flex-start;
@@ -89,6 +96,8 @@ export default {
     `,
     TyperMatchCenter: styled.div`
     display:flex;
+    align-items:center;
+    justify-content:center;
     width:160px;
     flex-direction:column;
     `,
@@ -105,5 +114,14 @@ export default {
     display:flex;
     width:100%;
     background:#15b271;
-    `
+    `,
+    ImgDiv: styled.div`
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    `,
+    TeamImg: styled.img`
+    width:30px;
+    height:30px;
+    `,
 }

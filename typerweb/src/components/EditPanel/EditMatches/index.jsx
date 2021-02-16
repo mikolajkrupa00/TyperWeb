@@ -6,12 +6,14 @@ import Select from 'react-select';
 import components from '../styles';
 import DateTimePicker from 'react-datetime-picker';
 import Layout from '../../Layout/index';
+import dateFormat from 'dateformat';
 
 const EditMatches = (props) => {
   const dispatch = useDispatch();
   const { teams, matches } = useSelector((x) => x.editPanelState);
   const { register, handleSubmit } = useForm();
-  const { SelectContainer, EditConainter, EditMatchRow, Team } = components;
+  const { SelectContainer, EditConainter, EditMatchRow, HomeTeam, AwayTeam, MatchDate, MatchResult, EditButton, EditMatchForm,
+    EditMatchInput, TeamImg, ImgDiv } = components;
   const [homeTeam, setHomeTeam] = useState();
   const [awayTeam, setAwayTeam] = useState();
   const [time, setTime] = useState();
@@ -29,17 +31,18 @@ const EditMatches = (props) => {
 
   const saveMatch = () => {
     const request = {
-      homeTeamId: +homeTeam.value,
-      awayTeamId: +awayTeam.value,
-      gameweekId: +gameweekId,
+      homeTeamId: homeTeam.value,
+      awayTeamId: awayTeam.value,
+      gameweekId: gameweekId,
       matchDate: time,
     };
+    console.log(request);
     Axios.post('/match', request).then((res) => {
       const payload = {
         homeTeamName: homeTeam.label,
         awayTeamName: awayTeam.label,
-        gameweekId: +gameweekId,
-        matchDate: time.toUTCString(),
+        gameweekId: gameweekId,
+        matchDate: new Date(time),
         homeTeamGoals: null,
         awayTeamGoals: null,
         matchId: res.data,
@@ -50,11 +53,14 @@ const EditMatches = (props) => {
 
   const editMatchResult = (data) => {
     const { matchId, homeTeamGoals, awayTeamGoals } = data;
+    console.log(data);
+    console.log(data.matchId)
     const request = {
-      matchId: +matchId,
+      matchId: matchId,
       homeTeamGoals: +homeTeamGoals,
       awayTeamGoals: +awayTeamGoals,
     };
+    console.log(request);
     Axios.put('/match/updateMatchResult', request).then((res) => {
       dispatch({ type: 'EDIT_MATCH', payload: request });
     });
@@ -75,35 +81,44 @@ const EditMatches = (props) => {
         {matches &&
           matches.map((match) => (
             <EditMatchRow>
-              {match.matchDate} <br />
-              <Team>{match.homeTeamName}</Team>
-              {match.isEdited ? (
-                <div>
-                  <form onSubmit={handleSubmit(editMatchResult)}>
-                    <input
-                      name="homeTeamGoals"
-                      ref={register()}
-                      type="number"
-                      defaultValue={match.homeTeamGoals ? match.homeTeamGoals : ''}
-                    />
-                    <input
-                      name="awayTeamGoals"
-                      ref={register()}
-                      type="number"
-                      defaultValue={match.awayTeamGoals ? match.awayTeamGoals : ''}
-                    />
-                    <input type="hidden" name="matchId" ref={register()} value={match.matchId} />
-                    <button type="submit">zapisz</button>
-                  </form>
-                </div>
-              ) : (
-                <div>
-                  {match.homeTeamGoals !== null ? match.homeTeamGoals : '-'} : {match.awayTeamGoals !== null ? match.awayTeamGoals : '-'}
-                </div>
-              )}
-              <Team>{match.awayTeamName}</Team>
-              {!match.isEdited && <button onClick={() => setMatchEditInput(match.matchId)}>edytuj wynik</button>}
-              <button onClick={() => deleteMatch(match.matchId)}>usuń</button>
+              <MatchDate>
+                {dateFormat(new Date(match.matchDate), 'mm-dd-yyyy HH:MM:ss')}
+              </MatchDate>
+              <HomeTeam>{match.homeTeamName}</HomeTeam>
+              <ImgDiv>
+                <TeamImg src={`${match.homeTeamName}.png`} />
+              </ImgDiv>
+              {match.isEdited ?
+                <EditMatchForm onSubmit={handleSubmit(editMatchResult)}>
+                  <EditMatchInput
+                    name="homeTeamGoals"
+                    ref={register()}
+                    type="number"
+                    defaultValue={match.homeTeamGoals !== null ? match.homeTeamGoals : ''}
+                  />
+                    -
+                    <EditMatchInput
+                    name="awayTeamGoals"
+                    ref={register()}
+                    type="number"
+                    defaultValue={match.awayTeamGoals !== null ? match.awayTeamGoals : ''}
+                  />
+                  <EditMatchInput type="hidden" name="matchId" ref={register()} value={match.matchId} />
+                  <AwayTeam>{match.awayTeamName}</AwayTeam>
+                  <EditButton type="submit" >Zapisz</EditButton>
+                </EditMatchForm> :
+                <>
+                  <MatchResult>
+                    {match.homeTeamGoals !== null ? match.homeTeamGoals : ''} - {match.awayTeamGoals !== null ? match.awayTeamGoals : ''}
+                  </MatchResult>
+                  <ImgDiv>
+                    <TeamImg src={`${match.awayTeamName}.png`} />
+                  </ImgDiv>
+                  <AwayTeam>{match.awayTeamName}</AwayTeam>
+                  <EditButton onClick={() => setMatchEditInput(match.matchId)}>edytuj wynik</EditButton>
+                  <EditButton onClick={() => deleteMatch(match.matchId)}>usuń</EditButton>
+                </>
+              }
             </EditMatchRow>
           ))}
 
@@ -118,7 +133,7 @@ const EditMatches = (props) => {
           <Select onChange={setAwayTeam} placeholder="gość" options={teams && teams.map((x) => ({ value: x.teamId, label: x.teamName }))} />
         </SelectContainer>
         <DateTimePicker value={time} onChange={setTime} />
-        <button onClick={saveMatch}>dodaj</button>
+        <EditButton onClick={saveMatch}>dodaj</EditButton>
       </EditConainter>
     </Layout>
   );

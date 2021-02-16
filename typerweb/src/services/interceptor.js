@@ -1,5 +1,24 @@
 import Axios from 'axios';
+import { toast } from 'react-toastify';
+
 import { localStorageService } from './localStorageService';
+
+
+const onResponseSuccess = cfg => (cfg);
+const onResponseFailed = cfg => {
+  if (cfg.response && cfg.response.data && cfg.response.data.error)
+    toast.error(cfg.response.data.error, {
+      position: "bottom-left",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  return Promise.reject(cfg);
+}
+
 const setupAxiosInterceptors = () => {
   Axios.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${localStorageService.token}`;
@@ -13,6 +32,7 @@ const setupAxiosInterceptors = () => {
     (cf) => cf,
     (cf) => cf
   );
+  Axios.interceptors.response.use(onResponseSuccess, onResponseFailed)
 };
 
 export { setupAxiosInterceptors };

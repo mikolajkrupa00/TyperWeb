@@ -11,11 +11,11 @@ const GameweekInput = (props) => {
   const history = useHistory();
   const { gameweek } = props;
   const { gameweekId, isEdited, gameweekNumber } = gameweek;
-  const { EditButton, EditInput, GameweekButton, AddButton } = components;
+  const { EditButton, EditInput, GameweekButton, SaveButton, GameweekContainer, EditSubmit } = components;
 
   const saveGameweek = ({ gameweekNumber }) => {
     const request = {
-      gameweekId: +gameweekId,
+      gameweekId: gameweekId,
       gameweekNumber: +gameweekNumber,
     };
     Axios.put('/gameweek', request).then((res) => {
@@ -28,7 +28,7 @@ const GameweekInput = (props) => {
   };
 
   const deleteGameweek = () => {
-    Axios.delete(`/gameweek/${+gameweekId}`).then(() => {
+    Axios.delete(`/gameweek/${gameweekId}`).then(() => {
       dispatch({ type: 'DELETE_GAMEWEEK', payload: gameweekId });
     });
   };
@@ -36,27 +36,27 @@ const GameweekInput = (props) => {
   return (
     <div>
       {!isEdited ? (
-        <div key={gameweekId}>
-          <GameweekButton onClick={() => history.push('/editMatches', gameweekId)}>{gameweekNumber}</GameweekButton>
+        <GameweekContainer key={gameweekId}>
+          <GameweekButton onClick={() => history.push('/editMatches', gameweekId)}>{`Kolejka ${gameweekNumber}`}</GameweekButton>
           <EditButton onClick={setGameweekEditInput}>edytuj</EditButton>
           <EditButton onClick={deleteGameweek}>usuń</EditButton>
-        </div>
+        </GameweekContainer>
       ) : (
-        <div key={gameweekId}>
-          <form onSubmit={handleSubmit(saveGameweek)}>
-            <EditInput
-              type="number"
-              name="gameweekNumber"
-              defaultValue={gameweekNumber}
-              ref={register({ required: true, min: 1, max: 50 })}
-            />
-            {errors['gameweekNumber']?.type === 'required' && <span>pole wymagane</span>}
-            {errors['gameweekNumber']?.type === 'min' && <span>zbyt mała wartość</span>}
-            {errors['gameweekNumber']?.type === 'max' && <span>zbyt duża wartość</span>}
-            <EditButton type="submit">zapisz</EditButton>
-          </form>
-        </div>
-      )}
+          <div key={gameweekId}>
+            <form onSubmit={handleSubmit(saveGameweek)}>
+              <EditInput
+                type="number"
+                name="gameweekNumber"
+                defaultValue={gameweekNumber}
+                ref={register({ required: true, min: 1, max: 50 })}
+              />
+              {errors['gameweekNumber']?.type === 'required' && <span>pole wymagane</span>}
+              {errors['gameweekNumber']?.type === 'min' && <span>zbyt mała wartość</span>}
+              {errors['gameweekNumber']?.type === 'max' && <span>zbyt duża wartość</span>}
+              <EditSubmit type="submit">zapisz</EditSubmit>
+            </form>
+          </div>
+        )}
     </div>
   );
 };

@@ -8,7 +8,7 @@ const Stats = () => {
 
     const dispatch = useDispatch();
     const { stats } = useSelector(x => x.statsState)
-    const { StatsContainer, StatsRow, ResultData, StatsHeader, Headers, TeamHeader, TeamData, ResultHeader, StatsData } = components;
+    const { StatsContainer, StatsRow, ResultData, StatsHeader, Headers, TeamHeader, TeamData, ResultHeader, StatsData, TeamImg } = components;
 
     useEffect(() => {
         Axios.get('/team/getTeamStats').then(res =>
@@ -22,6 +22,7 @@ const Stats = () => {
                 <Headers>
                     <ResultHeader>Poz.</ResultHeader>
                     <TeamHeader>Zespół</TeamHeader>
+                    <ResultHeader>M</ResultHeader>
                     <ResultHeader>Z</ResultHeader>
                     <ResultHeader>R</ResultHeader>
                     <ResultHeader>P</ResultHeader>
@@ -31,7 +32,9 @@ const Stats = () => {
                 {stats.map((x, index) =>
                     <StatsRow>
                         <ResultData>{index + 1}</ResultData>
+                        <TeamImg src={`${x.teamName}.png`} />
                         <TeamData>{x.teamName}</TeamData>
+                        <ResultData>{x.wins + x.draws + x.losses}</ResultData>
                         <ResultData>{x.wins}</ResultData>
                         <ResultData>{x.draws}</ResultData>
                         <ResultData>{x.losses}</ResultData>

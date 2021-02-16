@@ -21,6 +21,10 @@ import Login from './components/Login';
 import Stats from './components/Stats';
 import statsState from './components/Stats/reducer'
 import localStorage from 'local-storage';
+import userPageState from './components/UserPage/reducer'
+import { ToastContainer } from 'react-toastify';
+import UserPage from './components/UserPage';
+import 'react-toastify/dist/ReactToastify.css';
 
 setupAxiosInterceptors();
 
@@ -31,6 +35,7 @@ const App = () => {
     typerState,
     rankingState,
     statsState,
+    userPageState,
   });
   const store = createStore(reducers);
 
@@ -46,8 +51,20 @@ const App = () => {
         <Route path="/register" component={RegisterPage} />
         <Route path="/login" component={Login} />
         <Route path="/stats" component={Stats} />
+        <Route path="/profile" component={UserPage} />
         <Route path="/" component={HomePage} />
       </Switch>
+      <ToastContainer
+        position="top-left"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </Provider>
   );
 };

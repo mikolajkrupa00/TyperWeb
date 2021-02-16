@@ -15,27 +15,7 @@ const Login = () => {
     const history = useHistory();
 
     useEffect(() => {
-
-
-
-        Axios({
-            "method": "GET",
-            "url": "https://api-football-v1.p.rapidapi.com/v2/fixtures/league/2/last/10",
-            "headers": {
-                "content-type": "application/octet-stream",
-                "x-rapidapi-host": "api-football-v1.p.rapidapi.com",
-                "x-rapidapi-key": "3329bdd7c9msh0ff4ee6560ca4a2p1c2db4jsn0b0adafa96df",
-                "useQueryString": true
-            }
-        })
-            .then((response) => {
-                console.log(response.data.api.fixtures)
-            })
-            .catch((error) => {
-                console.log(error)
-            })
-
-    })
+    }, [])
 
     const authenticate = (data) => {
         Axios.post('/user/authenticate', data)

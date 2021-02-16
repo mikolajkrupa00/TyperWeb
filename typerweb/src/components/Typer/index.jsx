@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { localStorageService } from '../../services/localStorageService';
 import components from './styles'
 import { useHistory } from 'react-router-dom';
+import dateFormat from 'dateformat';
 
 const Typer = () => {
   const history = useHistory();
@@ -14,11 +15,14 @@ const Typer = () => {
   const { register, handleSubmit } = useForm();
   const { gameweeks, matches } = useSelector((x) => x.typerState);
   const { TyperMain, TyperTable, TyperInput, TyperForm, GameweekData, MatchData, HomeTeamName, MatchResult, TyperMatch, PredictedGoals,
-    MatchDate, FormSubmit, TyperMatchCenter, AwayTeamName, TyperInputs, SubmitContainer, IsSavedBlock } = components;
+    MatchDate, FormSubmit, TyperMatchCenter, AwayTeamName, TyperInputs, SubmitContainer, IsSavedBlock, TeamImg, ImgDiv } = components;
   useEffect(() => {
+    console.log(matches)
     Axios.get('/gameweek/getCurrentSeasonGameweeks').then((res) => {
       dispatch({ type: 'SET_GAMEWEEKS', payload: res.data });
-    }).catch(er => { if (er.response.status === 401) history.push("/login") });
+    }).catch(er => { console.log(er.response); if (er.response.status === 401) history.push("/login") });
+    Axios.get(`/matchprediction/getCurrentGameweekPredictionsByUserId/${localStorageService.userId}`).then(res =>
+      dispatch({ type: 'SET_MATCHES', payload: res.data }))
   }, []);
 
   const setMatches = (gameweekId) => {
@@ -46,7 +50,7 @@ const Typer = () => {
     console.log(data);
     let predictions = matches.filter((x) => new Date(x.matchDate) > new Date())
       .map((match) => ({
-        MatchPredictionId: +match.matchPredictionId,
+        MatchPredictionId: match.matchPredictionId,
         HomeTeamGoalsPrediction: data[`homeTeam${match.matchPredictionId}`] === "" ? null : +data[`homeTeam${match.matchPredictionId}`],
         AwayTeamGoalsPrediction: data[`awayTeam${match.matchPredictionId}`] === "" ? null : +data[`awayTeam${match.matchPredictionId}`],
       }));
@@ -55,6 +59,7 @@ const Typer = () => {
     Axios.put("/matchPrediction/updateMatchPredictions", { predictions: predictions });
     setIsSaved(true);
   };
+
 
   return (
     <Layout>
@@ -69,6 +74,9 @@ const Typer = () => {
                   matches.map(match => (
                     <MatchData>
                       <HomeTeamName>{match.homeTeamName}</HomeTeamName>
+                      <ImgDiv>
+                        <TeamImg src={`${match.homeTeamName}.png`} />
+                      </ImgDiv>
                       {new Date(match.matchDate) > new Date() ? (
                         <TyperMatch>
                           <MatchResult>{match.homeTeamGoals && match.homeTeamGoals}</MatchResult>
@@ -81,7 +89,7 @@ const Typer = () => {
                                 defaultValue={match.awayTeamGoalsPrediction !== null ? match.awayTeamGoalsPrediction : ''}
                                 ref={register()} type="text" />
                             </TyperInputs>
-                            <MatchDate>{match.matchDate}</MatchDate>
+                            <MatchDate>{dateFormat(new Date(match.matchDate), 'mm-dd-yyyy HH:MM:ss')}</MatchDate>
                           </TyperMatchCenter>
                           <MatchResult>{match.awayTeamGoals && match.awayTeamGoals}</MatchResult>
                         </TyperMatch>
@@ -90,16 +98,18 @@ const Typer = () => {
                             <MatchResult>{match.homeTeamGoals && match.homeTeamGoals}</MatchResult>
 
                             <TyperMatchCenter>
-                              <PredictedGoals>{match.homeTeamGoalsPrediction ? `${match.homeTeamGoalsPrediction} :
+                              <PredictedGoals>{match.homeTeamGoalsPrediction !== null ? `${match.homeTeamGoalsPrediction} :
                                ${match.awayTeamGoalsPrediction}` : `-:-`}
                               </PredictedGoals>
-                              <MatchDate>{match.matchDate}</MatchDate>
+                              <MatchDate>{dateFormat(new Date(match.matchDate), 'mm-dd-yyyy HH:MM:ss')}</MatchDate>
                             </TyperMatchCenter>
 
                             <MatchResult>{match.awayTeamGoals && match.awayTeamGoals}</MatchResult>
                           </TyperMatch>
                         )}
-
+                      <ImgDiv>
+                        <TeamImg src={`${match.awayTeamName}.png`} />
+                      </ImgDiv>
                       <AwayTeamName>{match.awayTeamName}</AwayTeamName>
                     </MatchData>
                   ))}

@@ -12,13 +12,13 @@ const EditTeamsPage = () => {
   const dispatch = useDispatch();
   const { teams } = useSelector((x) => x.editPanelState);
   const { register, handleSubmit, reset, errors } = useForm();
-  const { EditConainter } = components;
+  const { EditConainter, TeamData, EditButton, TeamsContainer, TeamInput, AddTeamButton, TeamImg, ImgDiv } = components;
 
   useEffect(() => {
     localStorageService.role === '0'
       ? Axios.get('/team').then((res) => {
-          dispatch({ type: 'SET_ADMIN_TEAMS', payload: res.data });
-        })
+        dispatch({ type: 'SET_ADMIN_TEAMS', payload: res.data });
+      })
       : history.push('/');
   }, []);
 
@@ -30,7 +30,7 @@ const EditTeamsPage = () => {
   };
 
   const deleteTeam = (teamId) => {
-    Axios.delete(`/team/${+teamId}`).then(dispatch({ type: 'DELETE_TEAM', payload: teamId }));
+    Axios.delete(`/team/${teamId}`).then(dispatch({ type: 'DELETE_TEAM', payload: teamId }));
   };
 
   return (
@@ -38,17 +38,22 @@ const EditTeamsPage = () => {
       <EditConainter>
         {teams &&
           teams.map((team) => (
-            <div>
-              {team.teamName}
-              <button onClick={() => deleteTeam(team.teamId)}>usuń</button>
-            </div>
+            <TeamsContainer>
+              <TeamData>
+                <ImgDiv>
+                  <TeamImg src={`${team.teamName}.png`} />
+                </ImgDiv>
+                {team.teamName}
+              </TeamData>
+              <EditButton onClick={() => deleteTeam(team.teamId)}>usuń</EditButton>
+            </TeamsContainer>
           ))}
         <form onSubmit={handleSubmit(saveTeam)}>
-          nazwa zespołu <input name="teamName" type="text" ref={register({ required: true, minLength: 4, maxLength: 30 })} />
+          <TeamInput placeholder="nazwa zespołu" name="teamName" type="text" ref={register({ required: true, minLength: 4, maxLength: 30 })} />
           {errors['teamName']?.type === 'required' && <span>pole wymagane</span>}
           {errors['teamName']?.type === 'minLength' && <span>zbyt krótka nazwa</span>}
           {errors['teamName']?.type === 'maxLength' && <span>zbyt długa nazwa</span>}
-          <button type="submit">dodaj</button>
+          <AddTeamButton type="submit">dodaj nowy</AddTeamButton>
         </form>
       </EditConainter>
     </Layout>

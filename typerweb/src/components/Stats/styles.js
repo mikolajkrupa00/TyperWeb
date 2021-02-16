@@ -7,7 +7,7 @@ export default {
     display:flex;
     flex-direction:row;
     align-items:center;
-    border-bottom:1px solid #e4e4e4 ;
+    border-bottom:2px solid #e4e4e4 ;
     `,
     ResultData: styled.div`
     width:90px;
@@ -16,7 +16,8 @@ export default {
     width:90px;
     `,
     TeamHeader: styled.div`
-    width:200px;
+    margin-left:5px;
+    width:240px;
     `,
     TeamData: styled.div`
     width:200px;`,
@@ -37,4 +38,9 @@ export default {
     justify-content:center;
     width:120px;
     `,
+    TeamImg: styled.img`
+    margin-right:15px;
+    width:35px;
+    height:35px;
+    `
 }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../Layout';
@@ -12,12 +12,13 @@ import { localStorageService } from '../../services/localStorageService';
 const EditPanelPage = () => {
   const dispatch = useDispatch();
   const { seasons, gameweeks } = useSelector((x) => x.editPanelState);
-  const { EditConainter, EditButton, EditInput } = components;
+  const [isGameweekCreating, setIsGameweekCreating] = useState(false);
+  const [isSeasonCreating, setIsSeasonCreating] = useState(false);
+  const { EditConainter, EditButton, EditInput, CreateForm, InputError, SaveButton, SubmitButtons } = components;
   const { register: registerSeason, handleSubmit: handleSeasonSubmit, errors: seasonErrors, reset: resetSeason } = useForm();
   const { register: registerGameweek, handleSubmit: handleGameweekSubmit, errors: gameweekErrors, reset: resetGameweek } = useForm();
   const history = useHistory();
   useEffect(() => {
-    //createTeams("2020", "2021")
     localStorageService.role !== '0'
       ? history.push('/')
       : Axios.get('/season')
@@ -36,18 +37,24 @@ const EditPanelPage = () => {
       dispatch({ type: 'ADD_SEASON', payload: { ...request, seasonId: res.data } }); // todo
     });
     resetSeason(['startYear', 'endYear']);
+    setIsSeasonCreating(false);
   };
 
   const saveGameweek = ({ seasonId, gameweekNumber }) => {
     const request = {
-      seasonId: +seasonId,
+      seasonId: seasonId,
       gameweekNumber: +gameweekNumber,
     };
+    console.log(request);
     Axios.post('/gameweek', request).then((res) => {
-      dispatch({ type: 'ADD_GAMEWEEK', payload: { gameweekNumber: gameweekNumber, gameweekId: res.data } });
-    });
+      dispatch({ type: 'ADD_GAMEWEEK', payload: { gameweekNumber: +gameweekNumber, gameweekId: res.data } });
+    }).catch(er => console.log(er));
     resetGameweek(['gameweekNumber']);
   };
+
+  const updateSeason = () => {
+    Axios.put('/season/updateSeason', {});
+  }
 
   return (
     <Layout>
@@ -63,32 +70,47 @@ const EditPanelPage = () => {
                       <GameweekInput gameweek={gameweek}></GameweekInput>
                     </div>
                   ))}
-                  <form onSubmit={handleGameweekSubmit(saveGameweek)}>
-                    <EditInput type="number" name="gameweekNumber" ref={registerGameweek({ required: true, min: 1, max: 50 })} />
-                    {gameweekErrors['gameweekNumber']?.type === 'required' && <span>pole wymagane</span>}
-                    {gameweekErrors['gameweekNumber']?.type === 'min' && <span>zbyt duża wartość</span>}
-                    {gameweekErrors['gameweekNumber']?.type === 'max' && <span>zbyt mała wartość</span>}
-                    <EditInput value={season.seasonId} type="hidden" name="seasonId" ref={registerGameweek()} />
-                    <EditButton type="submit">dodaj</EditButton>
-                  </form>
                 </div>
               )}
             </div>
           ))}
+        {isSeasonCreating &&
+          <CreateForm onSubmit={handleSeasonSubmit(saveSeason)}>
+            <EditInput placeholder="rok startowy" type="number" name="startYear" ref={registerSeason({ required: true, min: 2001, max: 2030 })} />
+            {seasonErrors['startYear']?.type === 'required' && <InputError>pole jest wymagane </InputError>}
+            {seasonErrors['startYear']?.type === 'min' && <InputError>zbyt mała wartość </InputError>}
+            {seasonErrors['startYear']?.type === 'max' && <InputError>zbyt duża wartość </InputError>}
 
-        <form onSubmit={handleSeasonSubmit(saveSeason)}>
-          <EditInput type="number" name="startYear" ref={registerSeason({ required: true, min: 2000, max: 2030 })} />
-          {seasonErrors['startYear']?.type === 'required' && <span>pole jest wymagane </span>}
-          {seasonErrors['startYear']?.type === 'min' && <span>zbyt mała wartość </span>}
-          {seasonErrors['startYear']?.type === 'max' && <span>zbyt duża wartość </span>}
+            <EditInput placeholder="rok końcowy" type="number" name="endYear" ref={registerSeason({ required: true, min: 2001, max: 2030 })} />
+            {seasonErrors['endYear']?.type === 'required' && <InputError>pole jest wymagane </InputError>}
+            {seasonErrors['endYear']?.type === 'min' && <InputError>zbyt mała wartość </InputError>}
+            {seasonErrors['endYear']?.type === 'max' && <InputError>zbyt duża wartość </InputError>}
+            <SubmitButtons>
+              <SaveButton onClick={() => setIsSeasonCreating(false)}>anuluj</SaveButton>
+              <SaveButton type="submit">dodaj</SaveButton>
+            </SubmitButtons>
+          </CreateForm>
+        }
+        {seasons && !seasons.find(season => season.isExpanded) && <EditButton onClick={() => setIsSeasonCreating(true)}>dodaj nowy sezon</EditButton>}
+        {seasons && seasons.find(season => season.isExpanded) && !isGameweekCreating &&
+          <EditButton onClick={() => setIsGameweekCreating(true)}>dodaj nową kolejkę</EditButton>
+        }
+        {isGameweekCreating && seasons.find(x => x.isExpanded) &&
 
-          <EditInput type="number" name="endYear" ref={registerSeason({ required: true, min: 2000, max: 2030 })} />
-          {seasonErrors['endYear']?.type === 'required' && <span>pole jest wymagane </span>}
-          {seasonErrors['endYear']?.type === 'min' && <span>zbyt mała wartość </span>}
-          {seasonErrors['endYear']?.type === 'max' && <span>zbyt duża wartość </span>}
-          <EditButton type="submit">dodaj</EditButton>
-        </form>
+          <CreateForm onSubmit={handleGameweekSubmit(saveGameweek)}>
+            <EditInput placeholder="numer kolejki" type="number" name="gameweekNumber" ref={registerGameweek({ required: true, min: 1, max: 50 })} />
+            {gameweekErrors['gameweekNumber']?.type === 'required' && <InputError>pole wymagane</InputError>}
+            {gameweekErrors['gameweekNumber']?.type === 'min' && <InputError>zbyt mała wartość</InputError>}
+            {gameweekErrors['gameweekNumber']?.type === 'max' && <InputError>zbyt duża wartość</InputError>}
+            <EditInput value={seasons.find(x => x.isExpanded).seasonId} type="hidden" name="seasonId" ref={registerGameweek()} />
+            <SubmitButtons>
+              <SaveButton onClick={() => setIsGameweekCreating(false)}>anuluj</SaveButton>
+              <SaveButton type="submit">dodaj</SaveButton>
+            </SubmitButtons>
+          </CreateForm>
+        }
         <EditButton onClick={() => history.push('/editTeams')}>edytuj zespoły</EditButton>
+        <EditButton onClick={() => updateSeason()}>Aktualizuj bierzący sezon</EditButton>
       </EditConainter>
     </Layout>
   );
